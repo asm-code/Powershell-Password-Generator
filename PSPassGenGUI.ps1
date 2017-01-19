@@ -15,8 +15,10 @@
 Param()
 
 Begin {	
-	if (-not (Test-Path .\New-Password.ps1)) {
-		[System.Windows.MessageBox]::Show("'Generate-Password.ps1' is missing", "Error", [System.Windows.MessageBoxButton]"OK"  , [System.Windows.MessageBoxImage]"Error")
+	Add-Type -AssemblyName PresentationFramework
+	$NewPassScript = Join-Path -Path $PSScriptRoot -ChildPath "New-Password.ps1"
+	if (-not (Test-Path $NewPassScript)) {
+		[System.Windows.MessageBox]::Show("'New-Password.ps1' is missing", "Error", [System.Windows.MessageBoxButton]"OK"  , [System.Windows.MessageBoxImage]"Error")
 		Break
 	}
 
@@ -49,7 +51,6 @@ Begin {
 "@
 
 	# Create Main Window
-	Add-Type -AssemblyName PresentationFramework
 	$XmlNodeReader = New-Object System.Xml.XmlNodeReader $MainForm
 	$MainWindow = [System.Windows.Markup.XamlReader]::Load($XmlNodeReader)
 
@@ -67,15 +68,15 @@ Begin {
 	$Generate.Add_Click({
 		$Result.Text = ""
 		$Params = @{
-					 Length = $Length.Text 
-					 Count = $Count.Text 
-					 UpperCase = $UpperCase.IsChecked
-					 LowerCase = $LowerCase.IsChecked
-					 Digits = $Digits.IsChecked
-					 Symbols = $Symbols.IsChecked
-				   }
-		$Passwords = & ".\New-Password.ps1" @Params
-        foreach ($Password in $Passwords) {
+			Length = $Length.Text 
+			Count = $Count.Text 
+			UpperCase = $UpperCase.IsChecked
+			LowerCase = $LowerCase.IsChecked
+			Digits = $Digits.IsChecked
+			Symbols = $Symbols.IsChecked
+			}
+		$Passwords = & $NewPassScript @Params
+       		foreach ($Password in $Passwords) {
 			$Result.Text += $Password + [System.Environment]::NewLine
 		}
 	})
