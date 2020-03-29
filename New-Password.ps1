@@ -18,6 +18,8 @@
 	Number of Charaters in the generated Password. Default = 7
 .PARAMETER Count
 	Number of password to generate. Default = 1
+.PARAMETER LinuxSafe
+	Will not use Characters that would need to be escaped when passed via stdin 
 .EXAMPLE
 	Generate one Password using all alphanumeric and special symbols ASCII Charaters with a default length of 7
 	.\New-Password
@@ -43,6 +45,8 @@ Param(
 	[Switch]$Digits,
 	[Parameter(ParameterSetName="Select")]
 	[Switch]$Symbols,
+	[Parameter(ParameterSetName="Select")]
+	[Switch]$linuxSafe,
 	[Parameter(ParameterSetName="All")]
 	[Switch]$All,
 	[int] $Length = 7, 
@@ -59,13 +63,14 @@ Begin {
     $DigitsCharArray = (48..57) | ForEach-Object {[char]$_}
     $(33..47),$(58..64),$(91..96),$(123..126) | ForEach-Object {$SymbolsASCII += $_}
     $SymbolsCharArray = $SymbolsASCII | ForEach-Object {[char]$_}
-	    
+	$linuxSafeSymbolsCharArray = $SymbolsCharArray | ForEach-Object {if ($_ -in @("!","\")){}else{$_}}
     # User Selection
     if ($PsCmdlet.ParameterSetName -eq "Select") {
 	    if ($UpperCase)  {$CharArray += $UpperCaseCharArray}
 	    if ($LowerCase)  {$CharArray += $LowerCaseCharArray}
 	    if ($Digits   )  {$CharArray += $DigitsCharArray}
-	    if ($Symbols  )  {$CharArray += $SymbolsCharArray}
+		if ($Symbols  -and !($linuxSafe))  {$CharArray += $SymbolsCharArray}
+		if ($linuxSafe -and $Symbols) {$CharArray += $linuxSafeSymbolsCharArray}
     }
     # All Printable ASCII Charaters
     else { 
